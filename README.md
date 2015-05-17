@@ -1,7 +1,7 @@
 # OIL_TPL
 
 
-### A OSEK Implementation Language (OIL) Syntax Language for [Sublime Text](http://www.sublimetext.com/).
+### An OSEK Implementation Language (OIL) Syntax Language for [Sublime Text](http://www.sublimetext.com/).
 
 ## About
 

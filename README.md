@@ -52,7 +52,8 @@ Of course, you can always [install manually](https://github.com/elgenius/OIL_TPL
 
 ## Activating
 
-OIL_TPL automatically takes over .tpl files. You can always switch syntax using View >> Syntax >> OIL
+OIL_TPL automatically takes over .tpl files.
+You can always switch syntax using `View >> Syntax >> OIL`
 
 
 *** IMPORTANT - MAKE SURE TO RESTART SUBLIME AFTER INSTALLING AND ACTIVATING ***

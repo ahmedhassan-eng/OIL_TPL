@@ -1,4 +1,5 @@
 # [PackageDev] target_format: plist, ext: tmLanguage
+comment: By Ahmed Hassan a.k.a ABOHASSAN. v0.2.1   GPL3 LICENSE
 name: OIL
 scopeName: source.oil
 fileTypes: [tpl]
@@ -6,60 +7,73 @@ uuid: 14d3f3d6-d017-4d81-97f7-e1271c5c72d4
 
 patterns:
 - include: '#block'
+
 - include: '#comments'
+
 - include: '#constants'
+
 - include: '#operator'
+
 - include: '#quotes'
 
 - name: keyword.control.oil
   match: \b(AS|CONCATE|WHERE)\b
 
-- begin: (\s*)\b(Date|Version)\b
+- name: meta.function.oil
+  begin: (\s*)\b(Date|Version)\b
   beginCaptures:
-    '1':
-      name: punctuation.whitespace.function.leading.oil
-    '2':
-      name: support.function.oil
+    '1': {name: punctuation.whitespace.function.leading.oil}
+    '2': {name: support.function.oil}
   end: (\(\))|(;)
-  name: meta.function.oil
   patterns:
   - include: '#comments'
   - include: '#parens'
   - include: '#block'
 
 repository:
-
-  quotes:
-    patterns:
-      - name: string.quoted.double.include.oil
-        begin: "'"
-        beginCaptures:
-          '0': {name: keyword.control.import.include}
-        end: '`'
-        endCaptures:
-          '0': {name: storage.type.oil}
-
-  constants:
-    patterns:
-      - match: \b(NULL|true|false|TRUE|FALSE)\b
-        name: constant.language.oil
-
-      - match: \b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b
-        name: constant.numeric.oil
-
-  operator:
-    patterns:
-      - match: ([\+\-\*\^\/])
-        name: keyword.operator.arithmetic.oil
-      - match: ([¬<>^~]?=(:)?|>|<|\||!|¦|¬|^|~|<>|><|\|\|)
-        name: keyword.operator.oil
+  access:
+    name: variable.other.dot-access.oil
+    match: \.[a-zA-Z_][a-zA-Z_0-9]*\b(?!\s*\()
 
   block:
+    name: meta.block.oil
     begin: \{
     end: \}
-    name: meta.block.oil
     patterns:
     - include: '#block_innards'
+
+  block_innards:
+    patterns:
+    - include: '#access'
+    - name: meta.function-call.oil
+      match: |-
+        (?x) (?: (?= \s )  (?:(?<=else|new|return) | (?<!\w)) (\s+))?
+                 (\b
+                    (?!(while|for|do|if|else|switch|catch|enumerate|return|r?iterate)\s*\()(?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\b | :: )++ # actual name
+                 )
+                  \s*(\()
+      captures:
+        '1': {name: punctuation.whitespace.function-call.leading.oil}
+        '2': {name: support.function.any-method.oil}
+        '3': {name: punctuation.definition.parameters.oil}
+    - name: meta.initialization.oil
+      match: |-
+        (?x)
+                         (?x)
+                 (?:
+                      (?: (?= \s )           (?<!else|new|return) (?<=\w)\s+      #or word + space before name
+                      )
+                 )
+                 (
+                    (?: [A-Za-z_][A-Za-z0-9_]*+ | :: )++    |   # actual name
+                    (?: (?<=operator) (?: [-*&<>=+!]+ | \(\) | \[\] ) )?  # if it is a C++ operator
+                 )
+                  \s*(\()
+      captures:
+        '1': {name: variable.other.oil}
+        '2': {name: punctuation.definition.parameters.oil}
+    - include: '#block'
+    - include: $base
 
   comments:
     patterns:
@@ -87,44 +101,33 @@ repository:
       - name: punctuation.separator.continuation.oil
         match: (?>\\\s*\n)
 
-  block_innards:
+  constants:
     patterns:
-    - include: '#access'
-    - captures:
-        '1':
-          name: punctuation.whitespace.function-call.leading.oil
-        '2':
-          name: support.function.any-method.oil
-        '3':
-          name: punctuation.definition.parameters.oil
-      match: "(?x) (?: (?= \\s )  (?:(?<=else|new|return) | (?<!\\w)) (\\s+))?\n \
-        \        (\\b\n            (?!(while|for|do|if|else|switch|catch|enumerate|return|r?iterate)\\\
-        s*\\()(?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\\b | :: )++                  # actual\
-        \ name\n         )\n          \\s*(\\()"
-      name: meta.function-call.oil
+    - name: constant.language.oil
+      match: \b(NULL|true|false|TRUE|FALSE)\b
+    - name: constant.numeric.oil
+      match: \b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b
 
-    - captures:
-        '1':
-          name: variable.other.oil
-        '2':
-          name: punctuation.definition.parameters.oil
-      match: "(?x)\n                 (?x)\n         (?:\n              (?: (?= \\\
-        s )           (?<!else|new|return) (?<=\\w)\\s+      #  or word + space before\
-        \ name\n              )\n         )\n         (\n            (?: [A-Za-z_][A-Za-z0-9_]*+\
-        \ | :: )++    |              # actual name\n            (?: (?<=operator)\
-        \ (?: [-*&<>=+!]+ | \\(\\) | \\[\\] ) )?  # if it is a C++ operator\n    \
-        \     )\n          \\s*(\\()"
-      name: meta.initialization.oil
-    - include: '#block'
-    - include: $base
-
-  access:
-    match: \.[a-zA-Z_][a-zA-Z_0-9]*\b(?!\s*\()
-    name: variable.other.dot-access.oil
+  operator:
+    patterns:
+    - name: keyword.operator.arithmetic.oil
+      match: ([\+\-\*\^\/])
+    - name: keyword.operator.oil
+      match: "([\xAC<>^~]?=(:)?|>|<|\\||!|\xA6|\xAC|^|~|<>|><|\\|\\|)"
 
   parens:
+    name: meta.parens.oil
     begin: \(
     end: \)
-    name: meta.parens.oil
     patterns:
     - include: $base
+
+  quotes:
+    patterns:
+    - name: string.quoted.double.include.oil
+      begin: "'"
+      beginCaptures:
+        '0': {name: keyword.control.import.include}
+      end: '`'
+      endCaptures:
+        '0': {name: storage.type.oil}

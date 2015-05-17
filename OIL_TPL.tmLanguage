@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>comment</key>
+	<string>By Ahmed Hassan a.k.a ABOHASSAN. v0.2.1   GPL3 LICENSE</string>
 	<key>fileTypes</key>
 	<array>
 		<string>tpl</string>
@@ -128,7 +130,7 @@
 					<key>match</key>
 					<string>(?x) (?: (?= \s )  (?:(?&lt;=else|new|return) | (?&lt;!\w)) (\s+))?
          (\b
-            (?!(while|for|do|if|else|switch|catch|enumerate|return|r?iterate)\s*\()(?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\b | :: )++                  # actual name
+            (?!(while|for|do|if|else|switch|catch|enumerate|return|r?iterate)\s*\()(?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\b | :: )++ # actual name
          )
           \s*(\()</string>
 					<key>name</key>
@@ -152,11 +154,11 @@
 					<string>(?x)
                  (?x)
          (?:
-              (?: (?= \s )           (?&lt;!else|new|return) (?&lt;=\w)\s+      #  or word + space before name
+              (?: (?= \s )           (?&lt;!else|new|return) (?&lt;=\w)\s+      #or word + space before name
               )
          )
          (
-            (?: [A-Za-z_][A-Za-z0-9_]*+ | :: )++    |              # actual name
+            (?: [A-Za-z_][A-Za-z0-9_]*+ | :: )++    |   # actual name
             (?: (?&lt;=operator) (?: [-*&amp;&lt;&gt;=+!]+ | \(\) | \[\] ) )?  # if it is a C++ operator
          )
           \s*(\()</string>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>tpl</string>
+	</array>
+	<key>name</key>
+	<string>OIL</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>begin</key>
+			<string>'</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>0</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.control.import.include</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>`</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>0</key>
+				<dict>
+					<key>name</key>
+					<string>storage.type.oil</string>
+				</dict>
+			</dict>
+			<key>name</key>
+			<string>string.quoted.double.include.oil</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(AS|CONCATE|WHERE)\b</string>
+			<key>name</key>
+			<string>keyword.control.c</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>source.oil</string>
+	<key>uuid</key>
+	<string>14d3f3d6-d017-4d81-97f7-e1271c5c72d4</string>
+</dict>
+</plist>

@@ -1,0 +1,17 @@
+# [PackageDev] target_format: plist, ext: tmLanguage
+name: OIL
+scopeName: source.oil
+fileTypes: [tpl]
+uuid: 14d3f3d6-d017-4d81-97f7-e1271c5c72d4
+
+patterns:
+- name: string.quoted.double.include.oil
+  begin: "'"
+  beginCaptures:
+    '0': {name: keyword.control.import.include}
+  end: '`'
+  endCaptures:
+    '0': {name: storage.type.oil}
+
+- match: \b(AS|CONCATE|WHERE)\b
+  name: keyword.control.c

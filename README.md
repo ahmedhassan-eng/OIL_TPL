@@ -16,23 +16,23 @@ ___
 ###Monokai
 
 ![image](screenshots/monokai.png)
-[View a larger screenshot](https://raw.github.com/elgenius/OIL_TPL/blob/master/screenshots/monokai.png)
+[View a larger screenshot](https://raw.githubusercontent.com/elgenius/OIL_TPL/blob/master/screenshots/monokai.png)
 ___
 ###Brogrammer
 
 ![image](screenshots/brogrammer.png)
-[View a larger screenshot](https://raw.github.com/elgenius/OIL_TPL/blob/master/screenshots/brogrammer.png)
+[View a larger screenshot](https://raw.githubusercontent.com/elgenius/OIL_TPL/blob/master/screenshots/brogrammer.png)
 
 ___
 ###Creamy
 
 ![image](screenshots/creamy.png)
-[View a larger screenshot](https://raw.github.com/elgenius/OIL_TPL/blob/master/screenshots/creamy.png)
+[View a larger screenshot](https://raw.githubusercontent.com/elgenius/OIL_TPL/blob/master/screenshots/creamy.png)
 ___
 ###Neon
 
 ![image](screenshots/neon.png)
-[View a larger screenshot](https://raw.github.com/elgenius/OIL_TPL/blob/master/screenshots/neon.png)
+[View a larger screenshot](https://raw.githubusercontent.com/elgenius/OIL_TPL/blob/master/screenshots/neon.png)
 
 
 

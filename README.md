@@ -48,7 +48,7 @@ For easy installation, install with [Package Control](https://packagecontrol.io/
 
 You can clone the repo to your `Packages` folder.
 
-Of course, you can always [install manually](https://github.com/ahmedhassan-eng/OIL_TPL/archive/master.zip), too. However, that's not recommended since the other options update the package automatically!
+Of course, you can always [install manually](https://github.com/ahmedhassan-eng/OIL_TPL/archive/master.zip), too. However, that's not recommended since the other options update the package automatically and this one does NOT!
 
 ## Activating
 

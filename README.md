@@ -1,5 +1,4 @@
 # OIL_TPL
- for Sublime Text
 
 
 ### A OSEK Implementation Language (OIL) Syntax Language for [Sublime Text](http://www.sublimetext.com/).
@@ -7,7 +6,7 @@
 ## About
 
 OIL_TPL is an initial attempt at making a complete OSEK Implementation Language (OIL) Syntax Language.
-For now, only .tpl files are supported. Bugs are expected, so please report them to me.
+For now, only .tpl files are supported. Bugs are expected, so please report them to me. I'll be constantly updating the package in the next weeks till I hit v1.0.0.
 
 OIL_TPL covers an array of syntax scopes, thus it is represented differently by every color scheme (theme).
 
@@ -41,7 +40,7 @@ ___
 ###Recommended
 For easy installation, install with [Package Control](https://sublime.wbond.net/docs).
 
-1. <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> (OS X) <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> (Win/Linux)
+1. <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> (Win/Linux)   <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> (OS X)
 2. Type `Package Control: Install Package`
 3. Search `OIL_TPL`
 

@@ -5,8 +5,8 @@
 
 ## About
 
-OIL_TPL is an initial attempt at making a complete OSEK Implementation Language (OIL) syntax language for [Sublime Text](http://www.sublimetext.com/).
-For now, only .tpl files are supported.
+OIL_TPL is an  attempt at making a complete OSEK Implementation Language (OIL) syntax language for [Sublime Text](http://www.sublimetext.com/).
+
 Bugs are expected, so please [report them to me](https://github.com/ahmedhassan-eng/OIL_TPL/issues).
 Hopefully, I'll be constantly updating the package in the next weeks till I hit v1.0.0.
 
@@ -18,6 +18,11 @@ ___
 
 ![image](screenshots/monokai.png)
 [View a larger screenshot](https://raw.githubusercontent.com/ahmedhassan-eng/OIL_TPL/master/screenshots/monokai.png)
+___
+###Tomorrow
+
+![image](screenshots/tomorrow.png)
+[View a larger screenshot](https://raw.githubusercontent.com/ahmedhassan-eng/OIL_TPL/master/screenshots/tomorrow.png)
 ___
 ###Brogrammer
 
@@ -54,7 +59,7 @@ Of course, you can always [install manually](https://github.com/ahmedhassan-eng/
 
 ## Activating
 
-OIL_TPL automatically takes over .tpl files.
+OIL_TPL automatically takes over `.tpl`, `.chx`, `.oil`, `.tpx`, `.obx` and `.stx` files.
 You can always switch syntax using menu `View >> Syntax >> OIL`
 
 

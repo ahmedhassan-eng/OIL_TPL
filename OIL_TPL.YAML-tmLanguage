@@ -1,8 +1,8 @@
 # [PackageDev] target_format: plist, ext: tmLanguage
-comment: By Ahmed Hassan a.k.a ABOHASSAN. v0.2.1   GPL3 LICENSE
+comment: By Ahmed Hassan a.k.a ABOHASSAN. v0.9.0   GPL3 LICENSE
 name: OIL
 scopeName: source.oil
-fileTypes: [tpl]
+fileTypes: [chx, tpl, oil, tpx, obx, stx]
 uuid: 14d3f3d6-d017-4d81-97f7-e1271c5c72d4
 
 patterns:
@@ -17,23 +17,83 @@ patterns:
 - include: '#quotes'
 
 - name: keyword.control.oil
-  match: \b(AS|CONCATE|WHERE)\b
+  match: \b(AS|CONCATE|WHERE|AUTO|INTO|PURPOSE|READ|WRITE|ONEPERLINE|WITH_AUTO|REWRITABLE|ADD_ON|Extract|INFO)\b
+
+- name: storage.type.oil
+  match: \b(ENUM|BOOLEAN)\b
+
+- name: storage.modifier.oil
+  match: \b(FILE|TPL|TRADOIL|IMPLEMENTATION|CPU|INT|ISR|TASK|OS|APPMODE|COUNTER)\b
+
+- name: support.type.stdint.oil
+  match: \b(UINT8|UINT16|UINT32|UINT64|STRING|FLOAT)\b
+
+- name: meta.preprocessor.oil.include
+  begin: ^\s*#\s*(include)\b\s+
+  end: (?=(?://|/\*))|$
+  captures:
+    '1': {name: keyword.control.import.include.oil}
+  patterns:
+  - name: punctuation.separator.continuation.oil
+    match: (?>\\\s*\n)
+  - name: string.quoted.double.include.oil
+    begin: '"'
+    beginCaptures:
+      '0': {name: punctuation.definition.string.begin.oil}
+    end: '"'
+    endCaptures:
+      '0': {name: punctuation.definition.string.end.oil}
+  - name: string.quoted.other.lt-gt.include.oil
+    begin: <
+    beginCaptures:
+      '0': {name: punctuation.definition.string.begin.oil}
+    end: '>'
+    endCaptures:
+      '0': {name: punctuation.definition.string.end.oil}
 
 - name: meta.function.oil
-  begin: (\s*)\b(Date|Version)\b
+  begin: (\s*)\b(Date|Version|COUNT|ORDERBY|Hex|Error|Warning|FileOrder|IsAuto|LCase|UCase|MIN|MAX|SUM)\b
   beginCaptures:
     '1': {name: punctuation.whitespace.function.leading.oil}
     '2': {name: support.function.oil}
   end: (\(\))|(;)
   patterns:
+  - name: meta.function-call.oil
+    match: |-
+      (?x) (?: (?= \s )  (?:(?<=else|new|return) | (?<!\w)) (\s+))?
+               (\b
+                  (?!(while|for|do|if|else|switch|catch|enumerate|return|r?iterate)\s*\()(?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\b | :: )++ # actual name
+               )
+                \s*(\()
+    captures:
+      '1': {name: punctuation.whitespace.function-call.leading.oil}
+      '2': {name: support.function.any-method.oil}
+      '3': {name: punctuation.definition.parameters.oil}
+  - name: meta.initialization.oil
+    match: |-
+      (?x)
+                       (?x)
+               (?:
+                    (?: (?= \s )           (?<!else|new|return) (?<=\w)\s+      #or word + space before name
+                    )
+               )
+               (
+                  (?: [A-Za-z_][A-Za-z0-9_]*+ | :: )++    |   # actual name
+                  (?: (?<=operator) (?: [-*&<>=+!]+ | \(\) | \[\] ) )?  # if it is a C++ operator
+               )
+                \s*(\()
+    captures:
+      '1': {name: variable.other.oil}
+      '2': {name: punctuation.definition.parameters.oil}
   - include: '#comments'
   - include: '#parens'
   - include: '#block'
+  - include: '#quotes'
 
 repository:
   access:
     name: variable.other.dot-access.oil
-    match: \.[a-zA-Z_][a-zA-Z_0-9]*\b(?!\s*\()
+    match: \s*\.[a-zA-Z_][a-zA-Z_0-9]*\b(?!\s*\()
 
   block:
     name: meta.block.oil
@@ -45,33 +105,6 @@ repository:
   block_innards:
     patterns:
     - include: '#access'
-    - name: meta.function-call.oil
-      match: |-
-        (?x) (?: (?= \s )  (?:(?<=else|new|return) | (?<!\w)) (\s+))?
-                 (\b
-                    (?!(while|for|do|if|else|switch|catch|enumerate|return|r?iterate)\s*\()(?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\b | :: )++ # actual name
-                 )
-                  \s*(\()
-      captures:
-        '1': {name: punctuation.whitespace.function-call.leading.oil}
-        '2': {name: support.function.any-method.oil}
-        '3': {name: punctuation.definition.parameters.oil}
-    - name: meta.initialization.oil
-      match: |-
-        (?x)
-                         (?x)
-                 (?:
-                      (?: (?= \s )           (?<!else|new|return) (?<=\w)\s+      #or word + space before name
-                      )
-                 )
-                 (
-                    (?: [A-Za-z_][A-Za-z0-9_]*+ | :: )++    |   # actual name
-                    (?: (?<=operator) (?: [-*&<>=+!]+ | \(\) | \[\] ) )?  # if it is a C++ operator
-                 )
-                  \s*(\()
-      captures:
-        '1': {name: variable.other.oil}
-        '2': {name: punctuation.definition.parameters.oil}
     - include: '#block'
     - include: $base
 
@@ -104,7 +137,7 @@ repository:
   constants:
     patterns:
     - name: constant.language.oil
-      match: \b(NULL|true|false|TRUE|FALSE)\b
+      match: \b(TRUE|FALSE)\b
     - name: constant.numeric.oil
       match: \b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b
 
@@ -131,3 +164,12 @@ repository:
       end: '`'
       endCaptures:
         '0': {name: storage.type.oil}
+    - name: string.quoted.double.oil
+      begin: '"'
+      beginCaptures:
+        '0': {name: keyword.control.import.include}
+      end: '"'
+      endCaptures:
+        '0': {name: storage.type.oil}
+    - name: invalid.illegal.stray-comment-end.oil
+      match: '`'

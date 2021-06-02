@@ -1,0 +1,570 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+file_extensions:
+  - oil
+  - oin # For "system include" files, apparently
+scope: source.oil
+
+# This was initially derived from the OIL spec v2.5, then extended from reading OIL files
+# used "in the wild", in order to support the extensions used there.
+
+variables:
+  object: '\b(?:OS|TASK|COUNTER|ALARM|RESOURCE|EVENT|ISR|MESSAGE|COM|NM|APPMODE|IPDU)\b'
+  name: '\b[A-Za-z][A-Za-z0-9_]*\b'
+
+contexts:
+  prototype:
+    - match: '^\s*(#\s*include)\b'
+      captures:
+        1: keyword.control.import.include.oil
+      push:
+        - meta_scope: meta.preprocessor.include.oil
+        - include: string
+        - match: '<'
+          scope: punctuation.definition.string.begin.oil
+          push:
+            - meta_scope: string.quoted.other.oil
+            - match: '>'
+              scope: punctuation.definition.string.end.oil
+              pop: true
+            - include: string_content
+        - include: eol_pop
+
+    - match: '/\*'
+      scope: punctuation.definition.comment.begin.oil
+      push:
+        - meta_scope: comment.block.oil
+        - match: '\*/'
+          scope: punctuation.definition.comment.end.oil
+          pop: true
+
+    - match: '//'
+      scope: punctuation.definition.comment.begin.oil
+      push:
+        - meta_scope: comment.line.double-slash.oil
+        - include: eol_pop
+
+
+  # Main grammar "dispatcher"
+
+  # Normally, a fully conforming OIL file would be `oil_ver`, `impl_def`, then `app_def`.
+  # However, since they can be `#include`d, we try to handle more partial files.
+  main:
+    - match: '(?=\bOIL_VERSION\b)'
+      push: expect_oil_ver
+    - match: '(?=\bIMPLEMENTATION\b)'
+      push: expect_impl_def
+    - match: '(?=\bCPU\b)'
+      push: expect_app_def
+    - match: \S+
+      scope: invalid.illegal.oil
+
+  unreachable:
+    - match: '.'
+      scope: invalid.illegal.i-messed-up.oil
+
+
+  # Contexts called directly by the dispatcher
+
+  expect_oil_ver:
+    - match: '\bOIL_VERSION\b'
+      scope: keyword.other.version.oil
+      set:
+        - expect_impl_def
+
+        - expect_ver_equ
+    - include: nonblank_pop
+  expect_ver_equ:
+    - match: '='
+      scope: punctuation.definition.version.oil
+      set:
+        - expect_semicolon
+        - expect_string
+    - include: nonblank_pop
+    - include: eol_pop
+
+
+  expect_impl_def:
+    - match: '\bIMPLEMENTATION\b'
+      scope: keyword.declaration.impl.oil
+      set:
+        - expect_app_def
+
+        - expect_semicolon
+        - expect_descr
+        - expect_closing_brace
+        - impl_def
+        - expect_opening_brace
+        - expect_impl_name
+    - include: nonblank_pop
+  expect_impl_name:
+    - match: '{{name}}'
+      scope: entity.name.impl.oil
+      pop: true
+    - include: nonblank_pop
+
+  impl_def:
+    - match: '{{name}}' # The OIL spec mandates `{{object}}` here, but in practice, extended values are used
+      scope: keyword.declaration.object.oil
+      push:
+        - expect_semicolon
+        - expect_descr
+        - expect_closing_brace
+        - impl_list
+        - expect_opening_brace
+    - match: '(?=\})'
+      pop: true
+    - match: '\S+' # Anything not understood is invalid
+      scope: invalid.illegal.oil
+
+  impl_list:
+    - match: '\bU?INT(?:32|64)\b'
+      scope: storage.type.oil
+      push:
+        - expect_semicolon
+        - expect_descr
+        - expect_default_num
+        - expect_closing_bracket
+        - expect_opening_bracket
+        - expect_attr_name
+        - expect_num_range
+        - expect_auto_spec
+    - match: '\bFLOAT\b'
+      scope: storage.type.oil
+      push:
+        - expect_semicolon
+        - expect_descr
+        - expect_default_float
+        - expect_closing_bracket
+        - expect_opening_bracket
+        - expect_attr_name
+        - expect_float_range
+        - expect_auto_spec
+    - match: '\bENUM\b'
+      scope: storage.type.oil
+      push:
+        - expect_semicolon
+        - expect_descr
+        - expect_default_enum
+        - expect_closing_bracket
+        - expect_opening_bracket
+        - expect_attr_name
+        - expect_closing_bracket
+        - expect_enum
+        - expect_opening_bracket
+        - expect_auto_spec
+    - match: '\bSTRING\b'
+      scope: storage.type.oil
+      push:
+        - expect_semicolon
+        - expect_descr
+        - expect_default_string
+        - expect_closing_bracket
+        - expect_opening_bracket
+        - expect_attr_name
+        - expect_auto_spec
+    - match: '\bBOOLEAN\b'
+      scope: storage.type.oil
+      push:
+        - expect_semicolon
+        - expect_descr
+        - expect_default_bool
+        - expect_closing_bracket
+        - expect_opening_bracket
+        - expect_attr_name
+        - expect_bool_vals
+        - expect_auto_spec
+    # impl_ref_def
+    - match: '\b[A-Z]+_TYPE\b' # OIL mandates basically `{{object}}_TYPE`, but there seem to be extensions
+      scope: storage.type.oil
+      push:
+        - expect_impl_ref_def
+        - expect_auto_spec # EXTENSION: some implementations allow `WITH_AUTO` here
+    - include: nonblank_pop
+  expect_impl_ref_def:
+    - match: '{{name}}'
+      scope: variable.other.member.oil
+      set:
+        - expect_semicolon
+        - expect_descr
+        - expect_default_unk # EXTENSION: some implementations allow adding `= AUTO`
+        - expect_closing_bracket
+        - expect_opening_bracket
+    - include: nonblank_pop
+
+  expect_app_def:
+    - match: '\bCPU\b'
+      scope: keyword.declaration.app.oil
+      set:
+        - unreachable
+
+        - expect_semicolon
+        - expect_descr
+        - expect_closing_brace
+        - obj_def_list
+        - expect_opening_brace
+        - expect_app_name
+    - include: nonblank_pop
+  expect_app_name:
+    - match: '{{name}}'
+      scope: entity.name.app.oil
+      pop: true
+    - include: nonblank_pop
+
+  obj_def_list:
+    - match: '\b[A-Za-z_][0-9A-Za-z_]*\b' # The OIL spec mandates `{{object}}` here, but in practice, extended values are used
+      scope: keyword.declaration.object.oil
+      push:
+        - expect_semicolon
+        - expect_descr
+        - obj_def
+        - expect_obj_name
+    - match: '(?=\})'
+      pop: true
+    - match: '\S+' # Anything not understood is invalid
+      scope: invalid.illegal.oil
+  expect_obj_name:
+    - match: '{{name}}'
+      scope: entity.name.object.oil
+      pop: true
+    - include: nonblank_pop
+
+  obj_def:
+    - match: '(?=\{)'
+      set:
+        - expect_closing_brace
+        - param_list
+        - expect_opening_brace
+    - match: '(?=\S)'
+      set: param_list
+  param_list:
+    - match: '{{name}}'
+      scope: variable.other.member.oil
+      push:
+      - expect_semicolon
+      - expect_value
+      - expect_equ
+    - include: nonblank_pop
+
+
+  # Shared "content" scopes
+
+  expect_auto_spec:
+    - match: '\bWITH_AUTO\b'
+      scope: storage.modifier.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_num_range:
+    - match: '\['
+      scope: punctuation.section.brackets.begin.oil
+      set:
+        - expect_closing_bracket
+        - expect_num_range_body
+        - expect_number
+    - include: nonblank_pop
+  expect_num_range_body:
+    - match: '\.\.'
+      scope: punctuation.separator.sequence.oil
+      set: expect_number
+    - match: '(?=,)'
+      set: expect_num_range_list
+    - include: nonblank_pop
+  expect_num_range_list:
+    - match: ','
+      scope: punctuation.separator.sequence.oil
+      set:
+        - expect_num_range_list
+        - expect_number
+    - include: nonblank_pop
+
+  expect_float_range:
+    - match: '\['
+      scope: punctuation.section.brackets.begin.oil
+      set:
+        - expect_closing_bracket
+        - expect_float
+        - expect_range_sep
+        - expect_float
+    - include: nonblank_pop
+
+  expect_enum:
+    - match: '{{name}}'
+      scope: constant.other.enum.oil
+      push:
+        - expect_comma
+        - expect_descr
+        - expect_impl_param_list
+    # EXTENSION: some implementations allow a list of numbers instead
+    - match: '(?=[0-9])'
+      push:
+        - expect_comma
+        - expect_number
+    - include: nonblank_pop
+
+  expect_impl_param_list:
+    - match: '\{'
+      scope: punctuation.section.braces.begin.oil
+      set:
+        - expect_closing_brace
+        - impl_list
+    - include: nonblank_pop
+
+  expect_bool_vals:
+    - match: '\['
+      scope: punctuation.section.brackets.begin.oil
+      set:
+        # OIL normally mandates TRUE before FALSE, but implementations allow any order
+        - match: '\bTRUE\b'
+          scope: constant.language.oil
+          set:
+          - expect_closing_bracket
+          - expect_descr
+          - expect_impl_param_list
+          - expect_false
+          - expect_comma
+          - expect_descr
+          - expect_impl_param_list
+        - match: '\bFALSE\b'
+          scope: constant.language.oil
+          set:
+          - expect_closing_bracket
+          - expect_descr
+          - expect_impl_param_list
+          - expect_true
+          - expect_comma
+          - expect_descr
+          - expect_impl_param_list
+    - include: nonblank_pop
+
+  expect_true:
+    - match: '\bTRUE\b'
+      scope: constant.language.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_false:
+    - match: '\bFALSE\b'
+      scope: constant.language.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_comma:
+    - match: ','
+      scope: punctuation.separator.sequence.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_range_sep:
+    - match: '\.\.'
+      scope: punctuation.separator.sequence.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_opening_bracket:
+    - match: '\['
+      scope: punctuation.section.brackets.begin.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_closing_bracket:
+    - match: '\]'
+      scope: punctuation.section.brackets.end.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_default_num:
+    - match: '='
+      scope: punctuation.separator.mapping.key-value.oil
+      set:
+        - match: '\bNO_DEFAULT\b'
+          scope: storage.modifier.oil
+          pop: true
+        - match: '\bAUTO\b'
+          scope: storage.modifier.oil
+          pop: true
+        - include: number
+        - include: nonblank_pop
+    - include: nonblank_pop
+
+  expect_default_float:
+    - match: '='
+      scope: punctuation.separator.mapping.key-value.oil
+      set:
+        - match: '\bNO_DEFAULT\b'
+          scope: storage.modifier.oil
+          pop: true
+        - match: '\bAUTO\b'
+          scope: storage.modifier.oil
+          pop: true
+        - include: float
+        - include: nonblank_pop
+    - include: nonblank_pop
+
+  expect_default_enum:
+    - match: '='
+      scope: punctuation.separator.mapping.key-value.oil
+      set:
+        - match: '\bNO_DEFAULT\b'
+          scope: storage.modifier.oil
+          pop: true
+        - match: '\bAUTO\b'
+          scope: storage.modifier.oil
+          pop: true
+        - match: '{{name}}'
+          scope: variable.other.constant.oil
+          pop: true
+        # EXTENSION: some implementations allow numbers as enums, thus the default value is a
+        # number too
+        - include: number
+        - include: nonblank_pop
+    - include: nonblank_pop
+
+  expect_default_string:
+    - match: '='
+      scope: punctuation.separator.mapping.key-value.oil
+      set:
+        - match: '\bNO_DEFAULT\b'
+          scope: storage.modifier.oil
+          pop: true
+        - match: '\bAUTO\b'
+          scope: storage.modifier.oil
+          pop: true
+        - include: string
+        - include: nonblank_pop
+    - include: nonblank_pop
+
+  expect_default_bool:
+    - match: '='
+      scope: punctuation.separator.mapping.key-value.oil
+      set:
+        - match: '\bNO_DEFAULT\b'
+          scope: storage.modifier.oil
+          pop: true
+        - match: '\bAUTO\b'
+          scope: storage.modifier.oil
+          pop: true
+        - match: '\b(?:TRUE|FALSE)\b'
+          scope: constant.language.oil
+          pop: true
+        - include: nonblank_pop
+    - include: nonblank_pop
+
+  expect_default_unk:
+    - match: '='
+      scope: punctuation.separator.mapping.key-value.oil
+      set:
+        - match: '\bNO_DEFAULT\b'
+          scope: storage.modifier.oil
+          pop: true
+        - match: '\bAUTO\b'
+          scope: storage.modifier.oil
+          pop: true
+        - include: nonblank_pop
+    - include: nonblank_pop
+
+  expect_attr_name:
+    - match: '{{name}}'
+      scope: variable.other.member.oil
+      pop: true
+    - include: nonblank_pop
+
+  string:
+    - match: '"'
+      scope: punctuation.definition.string.begin.oil
+      set:
+        - meta_scope: string.quoted.double.oil
+        - match: '"'
+          scope: punctuation.definition.string.end.oil
+          pop: true
+        - include: string_content
+  expect_string:
+    - include: string
+    - include: nonblank_pop
+
+  expect_semicolon:
+    - match: ';'
+      scope: punctuation.terminator.oil
+      pop: true
+    - include: nonblank_pop
+    - include: eol_pop
+
+  expect_opening_brace:
+    - match: '\{'
+      scope: punctuation.section.braces.begin.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_closing_brace:
+    - match: '\}'
+      scope: punctuation.section.braces.end.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_descr:
+    - match: ':'
+      scope: punctuation.separator.mapping.description.oil
+      set: expect_string
+    - include: nonblank_pop
+
+  expect_equ:
+    - match: '='
+      scope: keyword.operator.assignment.oil
+      pop: true
+    - include: nonblank_pop
+
+  expect_value:
+    - match: '\bAUTO\b'
+      scope: constant.language.auto.oil
+      pop: true
+    - match: '\b(TRUE|FALSE)\b|(?:{{name}})'
+      captures:
+        1: constant.language.boolean.oil
+      set:
+        - match: '\{'
+          scope: punctuation.section.block.begin.oil
+          set:
+            - expect_closing_brace
+            - param_list
+        - include: nonblank_pop
+    - include: number
+    - include: float
+    - include: string
+    - include: nonblank_pop
+
+  number:
+    - match: '0x[0-9A-Fa-f]+'
+      scope: constant.numeric.integer.hexadecimal.oil
+      pop: true
+    - match: '[-+]?(?:0|[1-9][0-9]*)'
+      scope: constant.numeric.integer.decimal.oil
+      pop: true
+  expect_number:
+    - include: number
+    - include: nonblank_pop
+
+  float:
+    - match: '[-+]?[0-9]+\.[0-9]+(?i:e[-+]?[0-9]+)?'
+      scope: constant.numeric.float.decimal.oil
+      pop: true
+  expect_float:
+    - include: float
+    - include: nonblank_pop
+
+
+  # Utility scopes
+
+  dbg_mark:
+    - meta_scope: invalid.deprecated.oil
+    - match: ''
+      pop: true
+
+  eol_pop:
+    - match: '$\n?'
+      pop: true
+
+  nonblank_pop:
+    - match: '\s+' # Discard whitespace in bulk
+    - match: '(?=\S)'
+      pop: true
